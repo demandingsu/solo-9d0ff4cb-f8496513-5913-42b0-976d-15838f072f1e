@@ -1,0 +1,24 @@
+services:
+  archive:
+    build: .
+    image: lake-archive:local
+    container_name: lake-archive
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      LAKE_DB: /data/archive.sqlite3
+      LAKE_HOST: 0.0.0.0
+      LAKE_PORT: "8000"
+    volumes:
+      - archive-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c",
+             "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/healthz', timeout=3).status==200 else 1)"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+volumes:
+  archive-data:
